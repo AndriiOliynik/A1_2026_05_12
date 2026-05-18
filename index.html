@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ćwiczenie Językowe (Mobile Friendly)</title>
+    <title>Ćwiczenie Językowe z Gramatyką</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -43,7 +43,6 @@
             color: #0f172a;
         }
 
-        /* Vocabulary Container (Scrollable on Mobile) */
         .vocab-container {
             background: #f8fafc;
             padding: 12px;
@@ -57,13 +56,7 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 6px;
         }
-        .vocab-item {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
 
-        /* Responsive Mode Toggle */
         .mode-toggle {
             display: flex;
             background: #e2e8f0;
@@ -88,7 +81,6 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Exercise Layout */
         .sentence-list {
             display: flex;
             flex-direction: column;
@@ -106,16 +98,27 @@
         .sentence-text {
             margin-bottom: 8px;
             word-wrap: break-word;
+            display: inline-block;
+            width: 100%;
         }
 
-        /* Input Elements */
+        .hint-text {
+            font-size: 0.85rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
+            font-weight: bold;
+            display: inline-block;
+        }
         .word-input {
             display: inline-block;
             font-size: 1rem;
             padding: 4px 8px;
             border: 2px solid #cbd5e1;
             border-radius: 6px;
-            width: 120px;
+            width: 130px;
             outline: none;
             transition: all 0.2s;
             margin: 2px 4px;
@@ -134,12 +137,22 @@
             color: #991b1b;
         }
 
-        /* Mobile-Optimized Choices Grid */
+        .choices-grid-wrapper {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e2e8f0;
+        }
+        .choice-title {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
         .choices-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px;
-            margin-top: 8px;
+            margin-bottom: 10px;
         }
         .choice-btn {
             background: #f8fafc;
@@ -169,6 +182,26 @@
         .choice-btn:disabled {
             opacity: 0.7;
         }
+
+        /* Стилі для блоку з правилом-підказкою */
+        .rule-box {
+            display: none;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            color: #78350f;
+            animation: fadeIn 0.3s ease;
+        }
+        .rule-box strong {
+            color: #b45309;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -176,7 +209,6 @@
 <div class="container">
     <h2>Ćwiczenie 1: Uzupełnij zdania poprawną formą.</h2>
     
-    <!-- Словник (компактний скрол на мобілках) -->
     <div class="vocab-container">
         <div>1) chleb</div><div>2) bułka</div><div>3) masło</div>
         <div>4) jajko</div><div>5) jogurt</div><div>6) ser</div>
@@ -188,60 +220,77 @@
         <div>22) wino</div><div>23) lody</div><div>24) ciastko</div>
     </div>
 
-    <!-- Перемикач режимів -->
     <div class="mode-toggle">
         <span id="label-input" class="mode-label active" onclick="setMode('input')">Вписати</span>
         <span id="label-select" class="mode-label" onclick="setMode('select')">Тест (4)</span>
     </div>
 
-    <!-- Список речень -->
     <div id="exercise-container" class="sentence-list"></div>
 </div>
 
 <script>
-    // Базові основи слів для розумної генерації помилкових закінчень
+    const baseWords = {
+        1: "chleb", 2: "bułka", 3: "masło", 4: "jajko", 5: "jogurt", 6: "ser",
+        7: "szynka", 8: "kiełbasa", 9: "kurczak", 10: "ryba", 11: "ryż", 12: "makaron",
+        13: "kanapka", 14: "sałatka", 15: "zupa", 16: "mięso", 17: "kawa", 18: "herbata",
+        19: "mleko", 20: "sok", 21: "piwo", 22: "wino", 23: "lody", 24: "ciastko"
+    };
+
+    // Граматичні підказки для кожного речення
+    const rules = {
+        biernik_affirmative: "<strong>💡 Правило (Biernik):</strong> У стверджувальних реченнях після дієслів <em>jem, pijemy, lubimy, poproszę</em> використовується <strong>Знахідний відмінок (Biernik)</strong>. <br>• Жіночий рід (-a) змінюється на <strong>-ę</strong> (sałatka → sałatkę).<br>• Чоловічий рід (істоти) отримує <strong>-a</strong> (kurczak → kurczaka).<br>• Середній та неживий чоловічий рід <strong>не змінюються</strong> (mięso, ryż, wino).",
+        dopelniacz_negative: "<strong>💡 Правило заперечення (Dopełniacz):</strong> Якщо перед дієсловом стоїть заперечення <strong>NIE</strong> (nie jem, nie piję, nie mam, nie lubię), Знахідний відмінок автоматично переходить у <strong>Родовий (Dopełniacz)</strong>!<br>• Жіночий рід отримує закінчення <strong>-y / -i</strong> (zupa → zupy, szynka → szynki).<br>• Чоловічий рід отримує закінчення <strong>-u / -a</strong> (sok → soku, chleb → chleba, ser → sera).<br>• Середній рід отримує закінчення <strong>-a</strong> (masło → masła, ciastko → ciastka)."
+    };
+
     const exercises = [
-        { text: ["Na obiad jem (9) ", ", (11) ", " i (14) ", "."], answers: ["kurczaka", "ryż", "sałatkę"], stems: ["kurczak", "ryż", "sałatk"] },
-        { text: ["Bardzo lubimy (18) ", " i (23) ", " czekoladowe."], answers: ["herbatę", "lody"], stems: ["herbat", "lod"] },
-        { text: ["Na lunch jedzą (13) ", " lub (15) ", "."], answers: ["kanapkę", "zupę"], stems: ["kanapk", "zup"] },
-        { text: ["Na obiad jemy (16) ", " lub (10) ", "."], answers: ["mięso", "rybę"], stems: ["mięs", "ryb"] },
-        { text: ["Poproszę czerwone (22) ", "."], answers: ["wino"], stems: ["win"] },
-        { text: ["Poproszę (24) ", " i (17) ", "."], answers: ["ciastko", "kawę"], stems: ["ciastk", "kaw"] },
-        { text: ["Na śniadanie pijemy (20) ", " pomarańczowy i jemy (4) ", "."], answers: ["sok", "jajko"], stems: ["sok", "jajk"] },
-        { text: ["Chcesz (17) ", " czy (18) ", "?"], answers: ["kawę", "herbatę"], stems: ["kaw", "herbat"] },
-        { text: ["Na kolację nie jedzą (5) ", " i nie piją (20) ", "."], answers: ["jogurtu", "soku"], stems: ["jogurt", "sok"] },
-        { text: ["Nie pijecie (21) ", "?"], answers: ["piwa"], stems: ["piw"] },
-        { text: ["Nie jesz (15) ", "?"], answers: ["zupy"], stems: ["zup"] },
-        { text: ["Nie mam (1) ", " i (3) ", "."], answers: ["chleba", "masła"], stems: ["chleb", "masł"] },
-        { text: ["Nie chcę (24) ", "."], answers: ["ciastka"], stems: ["ciastk"] },
-        { text: ["Nie lubię (10) ", " i nie jem (6) ", "."], answers: ["ryby", "sera"], stems: ["ryb", "ser"] },
-        { text: ["Nie lubimy (8) ", "."], answers: ["kiełbasy"], stems: ["kiełbas"] },
-        { text: ["One nie jedzą (7) ", " na kolację."], answers: ["szynki"], stems: ["szynk"] },
-        { text: ["Mamy (6) ", ", ale nie mamy (12) ", "."], answers: ["ser", "makaronu"], stems: ["ser", "makaron"] },
-        { text: ["Lubimy (7) ", ", ale nie lubimy (6) ", "."], answers: ["szynkę", "sera"], stems: ["szynk", "ser"] },
-        { text: ["Jemy (9) ", ", ale nie jemy (11) ", "."], answers: ["kurczaka", "ryżu"], stems: ["kurczak", "ryż"] },
-        { text: ["Pijemy (21) ", ", ale nie pijemy (22) ", "."], answers: ["piwo", "wina"], stems: ["piw", "win"] }
+        { text: ["Na obiad jem (9) ", ", (11) ", " i (14) ", "."], answers: ["kurczaka", "ryż", "sałatkę"], num: [9, 11, 14], stems: ["kurczak", "ryż", "sałatk"], rule: rules.biernik_affirmative },
+        { text: ["Bardzo lubimy (18) ", " i (23) ", " czekoladowe."], answers: ["herbatę", "lody"], num: [18, 23], stems: ["herbat", "lod"], rule: rules.biernik_affirmative },
+        { text: ["Na lunch jedzą (13) ", " lub (15) ", "."], answers: ["kanapkę", "zupę"], num: [13, 15], stems: ["kanapk", "zup"], rule: rules.biernik_affirmative },
+        { text: ["Na obiad jemy (16) ", " lub (10) ", "."], answers: ["mięso", "rybę"], num: [16, 10], stems: ["mięs", "ryb"], rule: rules.biernik_affirmative },
+        { text: ["Poproszę czerwone (22) ", "."], answers: ["wino"], num: [22], stems: ["win"], rule: rules.biernik_affirmative },
+        { text: ["Poproszę (24) ", " i (17) ", "."], answers: ["ciastko", "kawę"], num: [24, 17], stems: ["ciastk", "kaw"], rule: rules.biernik_affirmative },
+        { text: ["Na śniadanie pijemy (20) ", " pomarańczowy i jemy (4) ", "."], answers: ["sok", "jajko"], num: [20, 4], stems: ["sok", "jajk"], rule: rules.biernik_affirmative },
+        { text: ["Chcesz (17) ", " czy (18) ", "?"], answers: ["kawę", "herbatę"], num: [17, 18], stems: ["kaw", "herbat"], rule: rules.biernik_affirmative },
+        { text: ["Na kolację nie jedzą (5) ", " i nie piją (20) ", "."], answers: ["jogurtu", "soku"], num: [5, 20], stems: ["jogurt", "sok"], rule: rules.dopelniacz_negative },
+        { text: ["Nie pijecie (21) ", "?"], answers: ["piwa"], num: [21], stems: ["piw"], rule: rules.dopelniacz_negative },
+        { text: ["Nie jesz (15) ", "?"], answers: ["zupy"], num: [15], stems: ["zup"], rule: rules.dopelniacz_negative },
+        { text: ["Nie mam (1) ", " i (3) ", "."], answers: ["chleba", "masła"], num: [1, 3], stems: ["chleb", "masł"], rule: rules.dopelniacz_negative },
+        { text: ["Nie chcę (24) ", "."], answers: ["ciastka"], num: [24], stems: ["ciastk"], rule: rules.dopelniacz_negative },
+        { text: ["Nie lubię (10) ", " i nie jem (6) ", "."], answers: ["ryby", "sera"], num: [10, 6], stems: ["ryb", "ser"], rule: rules.dopelniacz_negative },
+        { text: ["Nie lubimy (8) ", "."], answers: ["kiełbasy"], num: [8], stems: ["kiełbas"], rule: rules.dopelniacz_negative },
+        { text: ["One nie jedzą (7) ", " na kolację."], answers: ["szynki"], num: [7], stems: ["szynk"], rule: rules.dopelniacz_negative },
+        { text: ["Mamy (6) ", ", ale nie mamy (12) ", "."], answers: ["ser", "makaronu"], num: [6, 12], stems: ["ser", "makaron"], rule: rules.dopelniacz_negative }, // мікс, але заперечення в кінці головне для помилок
+        { text: ["Lubimy (7) ", ", ale nie lubimy (6) ", "."], answers: ["szynkę", "sera"], num: [7, 6], stems: ["szynk", "ser"], rule: rules.dopelniacz_negative },
+        { text: ["Jemy (9) ", ", ale nie jemy (11) ", "."], answers: ["kurczaka", "ryżu"], num: [9, 11], stems: ["kurczak", "ryż"], rule: rules.dopelniacz_negative },
+        { text: ["Pijemy (21) ", ", ale nie pijemy (22) ", "."], answers: ["piwo", "wina"], num: [21, 22], stems: ["piw", "win"], rule: rules.dopelniacz_negative }
     ];
 
-    // Набір типових закінчень для створення дистракторів
     const endings = ['a', 'ę', 'y', 'ie', 'u', 'em', 'o', 'ich', 'ami'];
-
     let currentMode = 'input';
+    let audio = new Audio();
 
-    function speak(text) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'pl-PL';
-            window.speechSynthesis.speak(utterance);
-        }
+    function googleSpeak(text) {
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pl&client=tw-ob&q=${encodeURIComponent(text)}`;
+        audio.src = url;
+        audio.play().catch(e => console.log("Audio play failed:", e));
     }
 
-    // Генерація 3 унікальних невірних закінчень на основі кореня слова
+    function speakFullSentence(exIdx) {
+        const ex = exercises[exIdx];
+        let fullText = "";
+        ex.text.forEach((part, i) => {
+            let cleanPart = part.replace(/\(\d+\)/g, "");
+            fullText += cleanPart;
+            if (i < ex.answers.length) {
+                fullText += " " + ex.answers[i] + " ";
+            }
+        });
+        fullText = fullText.replace(/\s+/g, ' ').trim();
+        googleSpeak(fullText);
+    }
+
     function generateFakeEndings(correct, stem) {
         let fakes = new Set();
-        
-        // Генеруємо варіанти, додаючи випадкові закінчення до основи
         while (fakes.size < 3) {
             let randomEnding = endings[Math.floor(Math.random() * endings.length)];
             let generated = stem + randomEnding;
@@ -278,22 +327,25 @@
                 if (i < ex.answers.length) {
                     const correct = ex.answers[i];
                     const stem = ex.stems[i];
+                    const num = ex.num[i];
+                    const baseWord = baseWords[num];
                     const inputId = `input-${exIdx}-${i}`;
 
                     if (currentMode === 'input') {
-                        currentText += `<input type="text" id="${inputId}" class="word-input" data-ans="${correct}" onchange="checkInput('${inputId}')">`;
+                        currentText += `<span class="hint-text">${baseWord} &rarr;</span> <input type="text" id="${inputId}" class="word-input" data-ans="${correct}" data-exidx="${exIdx}" onchange="checkInput('${inputId}')">`;
                     } else {
-                        // Для мобільного режиму замість інлайну ставимо маркер, а кнопки виносимо вниз
-                        currentText += ` <b style="color:var(--primary)">[ ? ]</b> `;
+                        currentText += ` <b id="display-${exIdx}-${i}" style="color:var(--primary)">[ ? ]</b> `;
                         
                         const fakeEndings = generateFakeEndings(correct, stem);
                         const allChoices = [correct, ...fakeEndings].sort(() => 0.5 - Math.random());
 
+                        choicesBoxesHtml += `<div class="choices-grid-wrapper" id="wrapper-${exIdx}-${i}">`;
+                        choicesBoxesHtml += `<div class="choice-title">Слово (${num}) - Початкова форма: ${baseWord}</div>`;
                         choicesBoxesHtml += `<div class="choices-grid">`;
                         allChoices.forEach(choice => {
-                            choicesBoxesHtml += `<button class="choice-btn" onclick="checkSelect(this, '${correct}')">${choice}</button>`;
+                            choicesBoxesHtml += `<button class="choice-btn" data-correct-val="${correct}" onclick="checkSelect(this, '${correct}', ${exIdx}, ${i})">${choice}</button>`;
                         });
-                        choicesBoxesHtml += `</div>`;
+                        choicesBoxesHtml += `</div></div>`;
                     }
                 }
             });
@@ -304,6 +356,13 @@
                 itemDiv.innerHTML += choicesBoxesHtml;
             }
 
+            // Додаємо невидимий за замовчуванням блок для правила
+            const ruleDiv = document.createElement('div');
+            ruleDiv.id = `rule-${exIdx}`;
+            ruleDiv.className = 'rule-box';
+            ruleDiv.innerHTML = ex.rule;
+            itemDiv.appendChild(ruleDiv);
+
             container.appendChild(itemDiv);
         });
     }
@@ -312,38 +371,73 @@
         const input = document.getElementById(id);
         const userAns = input.value.trim().toLowerCase();
         const correctAns = input.getAttribute('data-ans').toLowerCase();
+        const exIdx = parseInt(input.getAttribute('data-exidx'));
+        const ruleBox = document.getElementById(`rule-${exIdx}`);
 
         if (userAns === correctAns) {
             input.className = "word-input correct";
-            speak(input.value);
+            ruleBox.style.display = "none"; // Ховаємо правило при успіху
+            
+            const parent = input.closest('.sentence-item');
+            const allInputs = parent.querySelectorAll('.word-input');
+            let allCorrect = true;
+            allInputs.forEach(inp => {
+                if(!inp.classList.contains('correct')) allCorrect = false;
+            });
+            
+            if(allCorrect) {
+                speakFullSentence(exIdx);
+            } else {
+                googleSpeak(input.value);
+            }
         } else if (userAns === "") {
             input.className = "word-input";
+            ruleBox.style.display = "none";
         } else {
             input.className = "word-input incorrect";
-            speak("Źle");
+            googleSpeak("Źle");
+            ruleBox.style.display = "block"; // Показуємо правило при помилці
         }
     }
 
-    function checkSelect(btn, correct) {
-        const parent = btn.parentElement;
-        const buttons = parent.querySelectorAll('.choice-btn');
+    function checkSelect(btn, correct, exIdx, partIdx) {
+        const wrapper = document.getElementById(`wrapper-${exIdx}-${partIdx}`);
+        const displayWord = document.getElementById(`display-${exIdx}-${partIdx}`);
+        const ruleBox = document.getElementById(`rule-${exIdx}`);
+        const buttons = wrapper.querySelectorAll('.choice-btn');
         const isCorrect = btn.innerText === correct;
 
         buttons.forEach(b => b.disabled = true);
 
         if (isCorrect) {
             btn.classList.add('correct');
-            speak(btn.innerText);
+            displayWord.innerText = ` ${correct} `;
+            displayWord.style.color = "var(--success)";
+            ruleBox.style.display = "none"; // Ховаємо правило, якщо цей крок успішний
+
+            const mainSentenceItem = wrapper.closest('.sentence-item');
+            const allWrappersInSentence = mainSentenceItem.querySelectorAll('.choices-grid-wrapper');
+            
+            let sentenceFinished = true;
+            allWrappersInSentence.forEach(w => {
+                const correctBtn = w.querySelector('.choice-btn.correct');
+                if (!correctBtn) sentenceFinished = false;
+            });
+
+            if (sentenceFinished) {
+                speakFullSentence(exIdx);
+            } else {
+                googleSpeak(btn.innerText);
+            }
         } else {
             btn.classList.add('incorrect');
-            speak("Źle");
+            googleSpeak("Źle");
+            ruleBox.style.display = "block"; // Показуємо правило при помилці
             buttons.forEach(b => {
                 if (b.innerText === correct) b.classList.add('correct');
             });
         }
     }
-
-    renderExercise();
 </script>
 
 </body>
