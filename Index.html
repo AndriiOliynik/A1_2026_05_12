@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ćwiczenie Językowe (Mobile Friendly)</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --background: #f1f5f9;
+            --text: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        /* Vocabulary Container (Scrollable on Mobile) */
+        .vocab-container {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            border: 1px solid #e2e8f0;
+            max-height: 120px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .vocab-item {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Responsive Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 99px;
+            margin-bottom: 24px;
+        }
+        .mode-label {
+            flex: 1;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 0;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .mode-label.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Exercise Layout */
+        .sentence-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .sentence-item {
+            background: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .sentence-text {
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+
+        /* Input Elements */
+        .word-input {
+            display: inline-block;
+            font-size: 1rem;
+            padding: 4px 8px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            width: 120px;
+            outline: none;
+            transition: all 0.2s;
+            margin: 2px 4px;
+        }
+        .word-input:focus {
+            border-color: var(--primary);
+        }
+        .word-input.correct {
+            border-color: var(--success);
+            background-color: #f0fdf4;
+            color: #166534;
+        }
+        .word-input.incorrect {
+            border-color: var(--error);
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        /* Mobile-Optimized Choices Grid */
+        .choices-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .choice-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.1s;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .choice-btn:active:not(:disabled) {
+            background: #edf2f7;
+        }
+        .choice-btn.correct {
+            background-color: var(--success) !important;
+            color: white;
+            border-color: var(--success);
+        }
+        .choice-btn.incorrect {
+            background-color: var(--error) !important;
+            color: white;
+            border-color: var(--error);
+        }
+        .choice-btn:disabled {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Ćwiczenie 1: Uzupełnij zdania poprawną formą.</h2>
+    
+    <!-- Словник (компактний скрол на мобілках) -->
+    <div class="vocab-container">
+        <div>1) chleb</div><div>2) bułka</div><div>3) masło</div>
+        <div>4) jajko</div><div>5) jogurt</div><div>6) ser</div>
+        <div>7) szynka</div><div>8) kiełbasa</div><div>9) kurczak</div>
+        <div>10) ryba</div><div>11) ryż</div><div>12) makaron</div>
+        <div>13) kanapka</div><div>14) sałatka</div><div>15) zupa</div>
+        <div>16) mięso</div><div>17) kawa</div><div>18) herbata</div>
+        <div>19) mleko</div><div>20) sok</div><div>21) piwo</div>
+        <div>22) wino</div><div>23) lody</div><div>24) ciastko</div>
+    </div>
+
+    <!-- Перемикач режимів -->
+    <div class="mode-toggle">
+        <span id="label-input" class="mode-label active" onclick="setMode('input')">Вписати</span>
+        <span id="label-select" class="mode-label" onclick="setMode('select')">Тест (4)</span>
+    </div>
+
+    <!-- Список речень -->
+    <div id="exercise-container" class="sentence-list"></div>
+</div>
+
+<script>
+    // Базові основи слів для розумної генерації помилкових закінчень
+    const exercises = [
+        { text: ["Na obiad jem (9) ", ", (11) ", " i (14) ", "."], answers: ["kurczaka", "ryż", "sałatkę"], stems: ["kurczak", "ryż", "sałatk"] },
+        { text: ["Bardzo lubimy (18) ", " i (23) ", " czekoladowe."], answers: ["herbatę", "lody"], stems: ["herbat", "lod"] },
+        { text: ["Na lunch jedzą (13) ", " lub (15) ", "."], answers: ["kanapkę", "zupę"], stems: ["kanapk", "zup"] },
+        { text: ["Na obiad jemy (16) ", " lub (10) ", "."], answers: ["mięso", "rybę"], stems: ["mięs", "ryb"] },
+        { text: ["Poproszę czerwone (22) ", "."], answers: ["wino"], stems: ["win"] },
+        { text: ["Poproszę (24) ", " i (17) ", "."], answers: ["ciastko", "kawę"], stems: ["ciastk", "kaw"] },
+        { text: ["Na śniadanie pijemy (20) ", " pomarańczowy i jemy (4) ", "."], answers: ["sok", "jajko"], stems: ["sok", "jajk"] },
+        { text: ["Chcesz (17) ", " czy (18) ", "?"], answers: ["kawę", "herbatę"], stems: ["kaw", "herbat"] },
+        { text: ["Na kolację nie jedzą (5) ", " i nie piją (20) ", "."], answers: ["jogurtu", "soku"], stems: ["jogurt", "sok"] },
+        { text: ["Nie pijecie (21) ", "?"], answers: ["piwa"], stems: ["piw"] },
+        { text: ["Nie jesz (15) ", "?"], answers: ["zupy"], stems: ["zup"] },
+        { text: ["Nie mam (1) ", " i (3) ", "."], answers: ["chleba", "masła"], stems: ["chleb", "masł"] },
+        { text: ["Nie chcę (24) ", "."], answers: ["ciastka"], stems: ["ciastk"] },
+        { text: ["Nie lubię (10) ", " i nie jem (6) ", "."], answers: ["ryby", "sera"], stems: ["ryb", "ser"] },
+        { text: ["Nie lubimy (8) ", "."], answers: ["kiełbasy"], stems: ["kiełbas"] },
+        { text: ["One nie jedzą (7) ", " na kolację."], answers: ["szynki"], stems: ["szynk"] },
+        { text: ["Mamy (6) ", ", ale nie mamy (12) ", "."], answers: ["ser", "makaronu"], stems: ["ser", "makaron"] },
+        { text: ["Lubimy (7) ", ", ale nie lubimy (6) ", "."], answers: ["szynkę", "sera"], stems: ["szynk", "ser"] },
+        { text: ["Jemy (9) ", ", ale nie jemy (11) ", "."], answers: ["kurczaka", "ryżu"], stems: ["kurczak", "ryż"] },
+        { text: ["Pijemy (21) ", ", ale nie pijemy (22) ", "."], answers: ["piwo", "wina"], stems: ["piw", "win"] }
+    ];
+
+    // Набір типових закінчень для створення дистракторів
+    const endings = ['a', 'ę', 'y', 'ie', 'u', 'em', 'o', 'ich', 'ami'];
+
+    let currentMode = 'input';
+
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pl-PL';
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // Генерація 3 унікальних невірних закінчень на основі кореня слова
+    function generateFakeEndings(correct, stem) {
+        let fakes = new Set();
+        
+        // Генеруємо варіанти, додаючи випадкові закінчення до основи
+        while (fakes.size < 3) {
+            let randomEnding = endings[Math.floor(Math.random() * endings.length)];
+            let generated = stem + randomEnding;
+            if (generated !== correct && generated !== stem) {
+                fakes.add(generated);
+            }
+        }
+        return Array.from(fakes);
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('label-input').classList.toggle('active', mode === 'input');
+        document.getElementById('label-select').classList.toggle('active', mode === 'select');
+        renderExercise();
+    }
+
+    function renderExercise() {
+        const container = document.getElementById('exercise-container');
+        container.innerHTML = '';
+
+        exercises.forEach((ex, exIdx) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'sentence-item';
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'sentence-text';
+
+            let currentText = '';
+            let choicesBoxesHtml = '';
+
+            ex.text.forEach((part, i) => {
+                currentText += part;
+                if (i < ex.answers.length) {
+                    const correct = ex.answers[i];
+                    const stem = ex.stems[i];
+                    const inputId = `input-${exIdx}-${i}`;
+
+                    if (currentMode === 'input') {
+                        currentText += `<input type="text" id="${inputId}" class="word-input" data-ans="${correct}" onchange="checkInput('${inputId}')">`;
+                    } else {
+                        // Для мобільного режиму замість інлайну ставимо маркер, а кнопки виносимо вниз
+                        currentText += ` <b style="color:var(--primary)">[ ? ]</b> `;
+                        
+                        const fakeEndings = generateFakeEndings(correct, stem);
+                        const allChoices = [correct, ...fakeEndings].sort(() => 0.5 - Math.random());
+
+                        choicesBoxesHtml += `<div class="choices-grid">`;
+                        allChoices.forEach(choice => {
+                            choicesBoxesHtml += `<button class="choice-btn" onclick="checkSelect(this, '${correct}')">${choice}</button>`;
+                        });
+                        choicesBoxesHtml += `</div>`;
+                    }
+                }
+            });
+
+            textDiv.innerHTML = currentText;
+            itemDiv.appendChild(textDiv);
+            if (choicesBoxesHtml) {
+                itemDiv.innerHTML += choicesBoxesHtml;
+            }
+
+            container.appendChild(itemDiv);
+        });
+    }
+
+    function checkInput(id) {
+        const input = document.getElementById(id);
+        const userAns = input.value.trim().toLowerCase();
+        const correctAns = input.getAttribute('data-ans').toLowerCase();
+
+        if (userAns === correctAns) {
+            input.className = "word-input correct";
+            speak(input.value);
+        } else if (userAns === "") {
+            input.className = "word-input";
+        } else {
+            input.className = "word-input incorrect";
+            speak("Źle");
+        }
+    }
+
+    function checkSelect(btn, correct) {
+        const parent = btn.parentElement;
+        const buttons = parent.querySelectorAll('.choice-btn');
+        const isCorrect = btn.innerText === correct;
+
+        buttons.forEach(b => b.disabled = true);
+
+        if (isCorrect) {
+            btn.classList.add('correct');
+            speak(btn.innerText);
+        } else {
+            btn.classList.add('incorrect');
+            speak("Źle");
+            buttons.forEach(b => {
+                if (b.innerText === correct) b.classList.add('correct');
+            });
+        }
+    }
+
+    renderExercise();
+</script>
+
+</body>
+</html>
